@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+	<a href="/save/{{matchid}}/"><button class="button">Сохранить протокол матча</button></a>
+	<div><h1>Счет </h1></div>
+	<div class="team-table">
+		<div class="scoreboard">
+			<div class="team">
+			  <span class="score">{{GolsA}}</span>
+			</div>
+			<div class="team">
+			  <span class="score">{{GolsB}}</span>
+			</div>
+		  </div>
+	{%if request.user.groups.all.0.name == 'referee'%}
+	<a href="/addGol/{{matchid}}/"><button class="button">Добавить попытку</button></a>
+	{%endif%}
+	</div>
+	
+
+<div class="team-table">
+	<div><h1>Замены</h1>
+		<table class="team-table">
+			<thead>
+				<tr>
+					<th>Команда</th>	
+					<th>Игрок</th>
+					<th>Заменен на</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for i in Changes %}
+					<tr>
+						<td>{{i.ChangedPlayerID.Team}}</td> 
+						<td>{{i.ChangedPlayerID.LName}}</td>
+						<td>{{i.NewPlayerID.LName}}</td>
+					</tr>
+					{%endfor%}
+			</tbody>
+			</tbody>
+		</table>
+	</div>
+	<a href="/addChange/{{matchid}}/"><button class="button add-player-btn">Добавить замену игрока</button></a>
+	<div class="tA"><h1>Предупреждения</h1>
+		<!-- <div>{{Alerts_teamA.0.2}}</div> -->
+		<table class="team-table" id="alerts">
+			<thead>
+				<tr>
+					<th>Команда</th>	
+					<th>Игрок</th>
+					<th>Нарушение</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for i in alerts %}
+				<tr>
+					<td>{{i.PlayerID.Team}}</td> 
+					<td>{{i.PlayerID.LName}}</td>
+					<td>{{i.Reazon}}</td>
+				</tr>
+				{%endfor%}
+			</tbody>
+		</table>
+		{%if request.user.groups.all.0.name == 'referee'%}
+		<a href="/addAlert/{{matchid}}/"><button class="button add-player-btn">Добавить предупреждение</button></a>
+		{%endif%}
+	</div>
+<div><h1>Удаления</h1></div>
+<div>
+	<table class="team-table">
+		<thead>
+			<tr>
+				<th>Команда</th>	
+				<th>Игрок</th>
+				<th>Нарушение</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for i in Deletes %}
+				<tr>
+					<td>{{i.PlayerID.Team}}</td> 
+					<td>{{i.PlayerID.LName}}</td>
+					<td>{{i.Reazon}}</td>
+				</tr>
+				{%endfor%}
+		</tbody>
+		</tbody>
+	</table>
+</div>
+{%if request.user.groups.all.0.name == 'referee'%}
+<a href="/addDelete/{{matchid}}/"><button class="button add-player-btn">Добавить удаление игрока</button></a>
+{%endif%}
+</div>
+{% endblock %}
+

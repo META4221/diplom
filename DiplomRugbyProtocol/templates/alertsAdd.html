@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+<h2>Состав команды</h2>
+<form  method="post">
+	{% csrf_token %}
+    {{ form }}  <!-- Render form fields as <p> elements -->
+        <button type="submit">Сохранить</button>
+        <button type="button" onclick="reset">Сохранить и добавить нового</button>
+</form>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="team-info">
+	<h2>Состав команды {{team.0.Name}}</h2>
+	<div class="container">
+	<section class="team-management">
+		<h2>Название команды {{team.0.Name}}</h2>
+		<h3>Цвет рубашки: {{team.0.TShirts}}</h3>
+		<h3>Цвет шорт: {{team.0.Pants}}</h3>
+		<h3>Город {{team.0.City}}</h3>
+		<!-- <input type="text" class="team-name-input" value="{{players.0.Team.Name}}">
+		<div class="team-colors">
+			<label for="shirt-color">Цвет рубашки:</label>
+			<input type="color" id="shirt-color" value="{{players.0.Team.TShirts}}">
+			<label for="shorts-color">Цвет шорт:</label>
+			<input type="color" id="shorts-color" value="{{players.0.Team.Pants}}">
+		</div> -->
+		<a href="/edit_team/{{team.0.pk}}/"><button class="save-changes-btn">Редактировать</button></a>
+	</section>
+	
+	<table class="team-table" id="myTable">
+		
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Фамилия</th>
+				<th>Имя</th>
+				<th>Отчество</th>
+				<th>Действия</th>
+			</tr>
+		</thead>
+		<tbody>
+			{%for player in players %}
+			<tr>
+				<td>{{ player.Number }}</td>
+				<td>{{ player.LName }}</td>
+				<td>{{ player.FName }}</td>
+				<td>{{ player.SName }}</td>
+				<td><a href="/edit/{{player.pk}}/">Редактировать</a>/<a href="/delete/{{player.pk}}/">Удалить</a></td>
+				<!-- добавить суда кнопку для редактирования/удаления игрока -->
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+	<a href="/add/{{team.0.pk}}" class="button">Добавить игрока</a>
+</div>
+{% endblock %}
+

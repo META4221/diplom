@@ -1,0 +1,43 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+  <head>
+    {% block title %}<title>ZabRagby</title>{% endblock %}
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="/static/css/bootstrap.css" rel='stylesheet' type='text/css' />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <!-- Добавление дополнительного статического CSS файла -->
+    
+    <link rel="stylesheet" href="/static/css/style1.css" type="text/css" media="all"/>
+  </head>
+  <!-- <header> -->
+	<div class="header">
+
+<img src="/static/images/logo.png" alt=""/>
+	  <!-- <h1>ZabRagby</h1> -->
+	  <nav>
+		  <ul>
+			  <li><h2><a href="/Teams/">Список команд</a></h2></li>
+			  <li><h2><a href="/match/">Матчи</a></h2></li>
+        <li><h2>{{request.user}} </h2></li>
+        <li><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button action="submit" class="button">Выйти</button></form></li>
+      </ul>
+        </nav>
+	</div>
+  <!-- </header> -->
+
+  <body>
+        <div>
+			{% block content %}
+			{% endblock %}
+		</div>
+      </div>
+    </div>
+  </body>
+</html>
