@@ -8,14 +8,65 @@ from .models import Changes,Aletrs,Match,Gols,Deletes
 from .forms import AlertsForm, ChangeForm, DeletesForm, MatchForm, GolForm
 from docxtpl import DocxTemplate
 
+def pointsCount(i,match_l):
+    Points={'points1':{'attempts':0, 'penalty':0, 'dropgol':0, 'realization':0, 'total':0},
+           'points2':{'attempts':0, 'penalty':0, 'dropgol':0, 'realization':0, 'total':0},
+           'overtime':{'attempts':0, 'penalty':0, 'dropgol':0, 'realization':0, 'total':0}
+    }
+
+    delta = datetime.datetime.combine(datetime.date.today(), i.Time) - datetime.datetime.combine(datetime.date.today(), match_l.get().StartTime)
+    if delta.total_seconds()/60 <=40:
+        match i.GolType.GolTypeName:
+            case 'Попытка':
+                Points['points1']['attempts'] += 5
+                Points['points1']['total'] += 5
+            case 'Реализация':
+                Points['points1']['realization'] += 7
+                Points['points1']['total'] += 3
+            case 'Штрафной':
+                Points['points1']['penalty'] += 3
+                Points['points1']['total'] += 7
+            case 'Дроп-гол':
+                Points['points1']['dropgol'] += 3
+                Points['points1']['total'] += 3
+    elif delta.total_seconds() / 60 >= 40:
+        match i.GolType:
+            case 'Попытка':
+                Points['points12']['attempts'] += 5
+                Points['points12']['total'] += 5
+            case 'Реализация':
+                Points['points2']['realization'] += 7
+                Points['points2']['total'] += 3
+            case 'Штрафной':
+                Points['points2']['penalty'] += 3
+                Points['points2']['total'] += 7
+            case 'Дроп-гол':
+                Points['points2']['dropgol'] += 3
+                Points['points2']['total'] += 3
+    else:
+        match i.GolType:
+            case 'Попытка':
+                Points['overtime']['attempts'] += 5
+                Points['overtime']['total'] += 5
+            case 'Реализация':
+                Points['overtime']['realization'] += 3
+                Points['overtime']['total'] += 3
+            case 'Штрафной':
+                Points['overtime']['penalty'] += 7
+                Points['overtime']['total'] += 7
+            case 'Дроп-гол':
+                Points['overtime']['dropgol'] += 3
+                Points['overtime']['total'] += 3
+    return Points
+
 def scoreCount(id):
     gols=Gols.objects.filter(MatchID=id)
     total_gols_a,total_gols_b=0,0
     for i in gols:
         if i.PlayerID.Team == i.MatchID.TeamA:
-            total_gols_a+=i.GolTypeA.Points
+            total_gols_a+=i.GolType.Points
         else:
-            total_gols_b+=i.GolTypeA.Points
+            total_gols_b+=i.GolType.Points
     return {'GolsB':total_gols_b,'GolsA':total_gols_a}
 
 def match_list(request):
@@ -23,8 +74,7 @@ def match_list(request):
     p={}
     for i in match_l:
         print(i.id)
-        p[i.id] = scoreCount(i.id)
-    # print(p['Матч Тигры против team 2'])    
+        p[i.id] = scoreCount(i.id)   
     return render(request,'match.html',{'matches':match_l,"score":p})
 
 def matchDetail(request, id):
@@ -39,142 +89,47 @@ def matchDetail(request, id):
         total_gols_a,total_gols_b=0,0
         for i in gols:
             if i.PlayerID.Team == i.MatchID.TeamA:
-                total_gols_a+=i.GolTypeA.Points
+                total_gols_a+=i.GolType.Points
             else:
-                total_gols_b+=i.GolTypeA.Points
+                total_gols_b+=i.GolType.Points
 
     match_l=Match.objects.filter(id=id)
 
     return render(request, 'matchdetail.html',{'Gols':gols,'GolsB':total_gols_b,'GolsA':total_gols_a,'alerts':alerts,'Match':match_l, 'Deletes':deletes, 'Changes':changes, 'matchid':id})
 
 def save(request,id):
-    print('save')
-
     with connection.cursor() as cursor:
-        cursor.execute("SELECT Reazon, LName, Name FROM referee_aletrs a join trener_player p on a.playerId_id =p.id join trener_team t on p.Team_id=t.id where MatchID_id=%s",[id])
-        rowsA=cursor.fetchall()
-        cursor.execute("select Reazon,LName,trener_team.Name from referee_aletrs,trener_player,trener_team, referee_match where referee_aletrs.PlayerID_id=trener_player.id and trener_player.Team_id=trener_team.id and trener_team.id=referee_match.TeamB_id and referee_aletrs.MatchID_id=%s",[id])
-        rowsB=cursor.fetchall()
-        cursor.execute("select Reazon,LName,trener_team.Name, MatchID_id from referee_deletes, trener_player,trener_team WHERE referee_deletes.PlayerID_id=trener_player.id and trener_player.Team_id=trener_team.id and MatchID_id=%s",[id])
-        deletes=cursor.fetchall()
-        cursor.execute("select LName,referee_gols.Time, GolType from referee_gols,trener_player,trener_team, referee_match where referee_gols.PlayerID_id=trener_player.id and trener_player.Team_id=trener_team.id and trener_team.id=referee_match.TeamA_id and referee_match.id=%s",[id])
-        goalsA=cursor.fetchall()
-        cursor.execute("select LName,referee_gols.Time, GolType from referee_gols,trener_player,trener_team, referee_match where referee_gols.PlayerID_id=trener_player.id and trener_player.Team_id=trener_team.id and trener_team.id=referee_match.TeamB_id and referee_match.id=%s",[id])
-        goalsB=cursor.fetchall()
+    
+        alerts=Aletrs.objects.filter(MatchID=id)
+        gols=Gols.objects.filter(MatchID=id)
+        deletes=Deletes.objects.filter(MatchID=id)
+        changes=Changes.objects.filter(MatchID=id)
         
-        cursor.execute("SELECT g.time, g.GolType, g.MatchID_id, p.LName, t.name FROM referee_gols g JOIN trener_player p ON g.playerId_id = p.id JOIN trener_team t ON p.Team_id = t.id where MatchID_id=%s",[id])
-        gols=cursor.fetchall()
-
-        cursor.execute("select StartTime from referee_match where referee_match.id=%s",[id])
-        matchData=cursor.fetchall()
-        
-        cursor.execute("SELECT p1.LName, p2.LName , pr.MatchID_id, t.name FROM referee_changes pr JOIN trener_player p1 ON pr.ChangedPlayerID_id = p1.id JOIN trener_player p2 ON pr.NewPlayerID_id = p2.id JOIN trener_team t on p1.Team_id=t.id WHERE MatchID_id=%s",[id])
-        changes=cursor.fetchall()
-
-        # print(gols)
-        
-    teamA={'points1':{'attempts':0, 'penalty':0, 'dropgol':0, 'realization':0, 'total':0},
-           'points2':{'attempts':0, 'penalty':0, 'dropgol':0, 'realization':0, 'total':0},
-           'overtime':{'attempts':0, 'penalty':0, 'dropgol':0, 'realization':0, 'total':0}
-    }
-    for i in goalsA:
-        delta = datetime.datetime.combine(datetime.date.today(), i[1]) - datetime.datetime.combine(datetime.date.today(), matchData[0][0])
-        if delta.total_seconds() / 60 <= 40:
-            if i[2] == 'attempt':
-                teamA['points1']['attempts'] += 5
-                teamA['points1']['total'] += 5
-            elif i[2] == 'penalty':
-                teamA['points1']['penalty'] += 3
-                teamA['points1']['total'] += 3
-            elif i[2] == 'dropgol':
-                teamA['points1']['dropgol'] += 3
-                teamA['points1']['total'] += 3
-            elif i[2] == 'realization':
-                teamA['points1']['realization'] += 7
-                teamA['points1']['total'] += 7
-        elif delta.total_seconds() / 60 >= 40:
-            if i[2] == 'attempt':
-                teamA['points2']['attempts'] += 5
-                teamA['points2']['total'] += 5
-            elif i[2] == 'penalty':
-                teamA['points2']['penalty'] += 3
-                teamA['points2']['total'] += 3
-            elif i[2] == 'dropgol':
-                teamA['points2']['dropgol'] += 3
-                teamA['points2']['total'] += 3
-            elif i[2] == 'realization':
-                teamA['points2']['realization'] += 7
-                teamA['points2']['total'] += 7
-        else:
-            if i[2] == 'attempt':
-                teamA['overtime']['attempts'] += 5
-                teamA['overtime']['total'] += 5
-            elif i[2] == 'penalty':
-                teamA['overtime']['penalty'] += 3
-                teamA['overtime']['total'] += 3
-            elif i[2] == 'dropgol':
-                teamA['overtime']['dropgol']+= 3
-                teamA['overtime']['total'] += 3
-            elif i[2] == 'realization':
-               teamA['overtime']['realization'] += 7
-               teamA['overtime']['total'] += 7
-
-    teamB={'points1':{'attempts':0, 'penalty':0, 'dropgol':0, 'realization':0, 'total':0},
-           'points2':{'attempts':0, 'penalty':0, 'dropgol':0, 'realization':0, 'total':0},
-           'overtime':{'attempts':0, 'penalty':0, 'dropgol':0, 'realization':0, 'total':0}
-    }
-    for i in goalsB:
-        delta = datetime.datetime.combine(datetime.date.today(), i[1]) - datetime.datetime.combine(datetime.date.today(), matchData[0][0])
-        if delta.total_seconds() / 60 <= 40:
-            if i[2] == 'attempt':
-                teamB['points1']['attempts'] += 5
-                teamB['points1']['total'] += 5
-            elif i[2] == 'penalty':
-                teamB['points1']['penalty'] += 3
-                teamB['points1']['total'] += 3
-            elif i[2] == 'dropgol':
-                teamB['points1']['dropgol'] += 3
-                teamB['points1']['total'] += 3
-            elif i[2] == 'realization':
-                teamB['points1']['realization'] += 7
-                teamB['points1']['total'] += 7
-        elif delta.total_seconds() / 60 >= 40:
-            if i[2] == 'attempt':
-                teamB['points2']['attempts'] += 5
-                teamB['points2']['total'] += 5
-            elif i[2] == 'penalty':
-                teamB['points2']['penalty'] += 3
-                teamB['points2']['total'] += 3
-            elif i[2] == 'dropgol':
-                teamB['points2']['dropgol'] += 3
-                teamB['points2']['total'] += 3
-            elif i[2] == 'realization':
-                teamB['points2']['realization'] += 7
-                teamB['points2']['total'] += 7
-        else:
-            if i[2] == 'attempt':
-                teamB['overtime']['attempts'] += 5
-                teamB['overtime']['total'] += 5
-            elif i[2] == 'penalty':
-                teamB['overtime']['penalty'] += 3
-                teamB['overtime']['total'] += 3
-            elif i[2] == 'dropgol':
-                teamB['overtime']['dropgol']+= 3
-                teamB['overtime']['total'] += 3
-            elif i[2] == 'realization':
-               teamB['overtime']['realization'] += 7
-               teamB['overtime']['total'] += 7
-
+        total_gols_a,total_gols_b=0,0
+        for i in gols:
+            if i.PlayerID.Team == i.MatchID.TeamA:
+                total_gols_a+=i.GolType.Points
+            else:
+                total_gols_b+=i.GolType.Points
     match_l=Match.objects.filter(id=id)
-
+    for i in gols:
+        print(i.PlayerID.Team)
+        if i.PlayerID.Team == match_l.get().TeamA:
+            teamA=pointsCount(i, match_l)
+            print(teamA)
+        else:
+            teamB=pointsCount(i, match_l)
+            print(teamB)
     doc = DocxTemplate('templates/test.docx')
     context={'test':'testasdas',
              't':request,
              'Changes':changes,
              'Deletes':deletes,
-             'Alerts':rowsA,
+             'Alerts':alerts,
              'Match':match_l,
+             'gols':gols,
               'GoalA':teamA,'GoalB':teamB,}
+    
     doc.render(context)
     user_download_dir = os.path.expanduser('~\Downloads')
     print(user_download_dir)
