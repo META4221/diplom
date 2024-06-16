@@ -11,9 +11,7 @@ class AlertsForm(forms.ModelForm):
 
         for i in teams:
             players_in_teams = Player.objects.filter(Team_id__in=i)
-
-        self.fields['PlayerID'].queryset = players_in_teams
-
+            self.fields['PlayerID'].queryset = players_in_teams
 
     class Meta:
         model=Aletrs
@@ -31,8 +29,8 @@ class ChangeForm(forms.ModelForm):
 
         for i in teams:
             players_in_teams = Player.objects.filter(Team_id__in=i)
-        self.fields['ChangedPlayerID'].queryset = players_in_teams
-        self.fields['NewPlayerID'].queryset = players_in_teams
+            self.fields['ChangedPlayerID'].queryset = players_in_teams
+            self.fields['NewPlayerID'].queryset = players_in_teams
 
         for fields in self.fields:
             self.fields[fields].widget.attrs['class']='team h2'
@@ -52,7 +50,7 @@ class DeletesForm(forms.ModelForm):
 
         for i in teams:
             players_in_teams = Player.objects.filter(Team_id__in=i)
-        self.fields['PlayerID'].queryset = players_in_teams
+            self.fields['PlayerID'].queryset = players_in_teams
 
         for fields in self.fields:
             self.fields[fields].widget.attrs['class']='team h2'
@@ -91,7 +89,8 @@ class GolForm(forms.ModelForm):
 
         for i in teams:
             players_in_teams = Player.objects.filter(Team_id__in=i)
-        self.fields['PlayerID'].queryset = players_in_teams
+            print(players_in_teams)
+            self.fields['PlayerID'].queryset = players_in_teams
 
         for fields in self.fields:
             self.fields[fields].widget.attrs['class']='team h2'

@@ -79,8 +79,7 @@ class GolsTypes(models.Model):
 class Gols(models.Model):
     MatchID=models.ForeignKey(Match, related_name='gols_on_match', on_delete=models.CASCADE)
     Time=models.TimeField()
-    GolTypeA=models.ForeignKey(GolsTypes, related_name='gols_type', on_delete=models.CASCADE)
-    GolType=models.CharField(max_length=12,choices=(('attempt','Попытка'),('realization','Реализация'),('penalty','Штрафной'),('dropgol','Дроп-гол')))
+    GolType=models.ForeignKey(GolsTypes, related_name='gols_type', on_delete=models.CASCADE)
     PlayerID=models.ForeignKey(Player,related_name='scored_player', on_delete=models.CASCADE)
 
     class Meta:

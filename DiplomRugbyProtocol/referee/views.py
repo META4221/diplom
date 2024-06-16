@@ -8,10 +8,24 @@ from .models import Changes,Aletrs,Match,Gols,Deletes
 from .forms import AlertsForm, ChangeForm, DeletesForm, MatchForm, GolForm
 from docxtpl import DocxTemplate
 
+def scoreCount(id):
+    gols=Gols.objects.filter(MatchID=id)
+    total_gols_a,total_gols_b=0,0
+    for i in gols:
+        if i.PlayerID.Team == i.MatchID.TeamA:
+            total_gols_a+=i.GolTypeA.Points
+        else:
+            total_gols_b+=i.GolTypeA.Points
+    return {'GolsB':total_gols_b,'GolsA':total_gols_a}
 
 def match_list(request):
     match_l=Match.objects.all()
-    return render(request,'match.html',{'matches':match_l})
+    p={}
+    for i in match_l:
+        print(i.id)
+        p[i.id] = scoreCount(i.id)
+    # print(p['Матч Тигры против team 2'])    
+    return render(request,'match.html',{'matches':match_l,"score":p})
 
 def matchDetail(request, id):
     match=get_object_or_404(Match, id=id)

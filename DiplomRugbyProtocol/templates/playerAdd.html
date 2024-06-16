@@ -1,20 +1,11 @@
 {% extends 'base.html' %}
-<style>
-    .myfield{
-        border:1px solid #ccc; 
-        border-radius:5px;
-        height:25px;
-        width:200px;
-        margin: 10px 10px 10px 0;
-    }
-</style>
 {% block content %}
 <div class="container">
-<h2>{{request.user}}</h2>
+<!-- <h2>{{request.user}}</h2> -->
 <form  method="post">
     <div class="">
 	{% csrf_token %}
-    <h2>{{ form }}</h2>  <!-- Render form fields as <p> elements -->
+    <h3 class="form">{{ form.as_p }}</h3>  <!-- Render form fields as <p> elements -->
         <button type="submit" class="button">Сохранить</button>
         <!-- <button type="button">Сохранить и добавить нового</button> -->
     </div>
