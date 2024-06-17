@@ -1,3 +1,4 @@
+import datetime
 from .models import Aletrs,Changes,Deletes, Match, Gols, Player
 from django import forms
 
@@ -65,9 +66,7 @@ class MatchForm(forms.ModelForm):
         self.fields['TeamA'].label = 'Команда А'
         self.fields['TeamB'].label = 'Команда Б'
         self.fields['StartTime'].label = 'Время начала матча'
-        self.fields['EndTime'].label = 'Время окончания матча'
-        self.fields['ScoreA'].label = 'Счет команды А'
-        self.fields['ScoreB'].label = 'Счет команды Б'
+        self.fields['StartTime'].initial = datetime.datetime.now()
         self.fields['Type'].label = 'Тип матча'
 
         for fields in self.fields:
@@ -75,13 +74,14 @@ class MatchForm(forms.ModelForm):
     
     class Meta:
         model=Match
-        fields=['TeamA','TeamB','StartTime','EndTime','ScoreA','ScoreB','Type']
+        fields=['TeamA','TeamB','StartTime','Type']
 
 class GolForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(GolForm, self).__init__(*args, **kwargs)
         self.fields['MatchID'].label = 'Матч'
         self.fields['Time'].label = 'Время'
+        self.fields['Time'].initial = datetime.datetime.now()
         self.fields['GolType'].label = 'Тип попытки'
         self.fields['PlayerID'].label = 'Игрок'
 

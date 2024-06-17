@@ -29,6 +29,9 @@ class TeamForm(forms.ModelForm):
         self.fields['City'].label = 'Город'
         self.fields['Trener'].label='Тренер'
 
+        for fields in self.fields:
+            self.fields[fields].widget.attrs['class']='team h2'
+
 
     class Meta:
         model=Team

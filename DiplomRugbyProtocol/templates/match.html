@@ -1,14 +1,11 @@
 {% extends 'base.html' %}
 {% block content %}
 {%load test%}
-<section class="matches-list">
-	<h2>Список матчей</h2>
-	<ul class="matches">
+<section class="container">
 		{%if request.user.groups.all.0.name == 'referee'%}
-		<a href="/addMatch/" class="button">Новый матч</a>
+		<a href="/addMatch/" class="button">Создать новый матч</a>
 		{%endif%}
 		{%for i in matches%}
-		<div class="container">
 			<h1>{{i.Type}} Матч команды {{i.TeamA}} против команды {{i.TeamB}}</h1>
 			<div class="scoreboard">
 			  <div class="team">
@@ -21,10 +18,8 @@
 			</div>
 			<a href="/matchDetail/{{i.id}}/" class="button">Детали</a>
 			
-		  </div>
 		  {%endfor%}
 		  
-	</ul>
 </section>
 
 {% endblock %}

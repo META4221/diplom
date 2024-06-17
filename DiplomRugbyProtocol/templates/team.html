@@ -1,13 +1,11 @@
 {% extends 'base.html' %}
 {% block content %}
-<section class="team-info">
-	<h2>Список команд {{request.user}}</h2>
-	<a href="/addTeam/" class="button">Новая команда</a>
+<section class="container">
+	<h1>Список Ваших команд, {{request.user}}</h1>
+	<a href="/addTeam/" class="button">Создать новую команду</a>
 	{%for i in teams%}
-		<div class="container">
 			<h1>{{i.Name}}</h1>
 			<a href="/TeamDetail/{{i.id}}/" class="button">Посмотреть подробнее</a>
-		  </div>
 		  {%endfor%}
 </section>
 {% endblock %}

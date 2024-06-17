@@ -3,7 +3,7 @@
 <div class="container">
 <!-- <h2>{{request.user}}</h2> -->
 <form  method="post">
-    <div class="">
+    <div class="con">
 	{% csrf_token %}
     <h3 class="form">{{ form.as_p }}</h3>  <!-- Render form fields as <p> elements -->
         <button type="submit" class="button">Сохранить</button>

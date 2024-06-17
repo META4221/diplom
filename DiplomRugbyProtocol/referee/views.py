@@ -1,6 +1,7 @@
 import os
+from django.conf import settings
 from django.db import connection
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render, get_object_or_404
 import datetime
 from trener.models import Player
@@ -81,10 +82,10 @@ def matchDetail(request, id):
     match=get_object_or_404(Match, id=id)
     with connection.cursor() as cursor:
         
-        alerts=Aletrs.objects.filter(MatchID=id)
-        gols=Gols.objects.filter(MatchID=id)
-        deletes=Deletes.objects.filter(MatchID=id)
-        changes=Changes.objects.filter(MatchID=id)
+        alerts=Aletrs.objects.filter(MatchID=id)#получение данных о предупреждениях из бзы данных
+        gols=Gols.objects.filter(MatchID=id)#получение данных о голах из бзы данных
+        deletes=Deletes.objects.filter(MatchID=id)#получение данных об удалениях из бзы данных
+        changes=Changes.objects.filter(MatchID=id)#получение данных о заменах игроков из бзы данных
         
         total_gols_a,total_gols_b=0,0
         for i in gols:
@@ -95,7 +96,14 @@ def matchDetail(request, id):
 
     match_l=Match.objects.filter(id=id)
 
-    return render(request, 'matchdetail.html',{'Gols':gols,'GolsB':total_gols_b,'GolsA':total_gols_a,'alerts':alerts,'Match':match_l, 'Deletes':deletes, 'Changes':changes, 'matchid':id})
+    return render(request, 'matchdetail.html',{'Gols':gols,
+                                               'GolsB':total_gols_b,
+                                               'GolsA':total_gols_a,
+                                               'alerts':alerts,
+                                               'Match':match_l,
+                                               'Deletes':deletes,
+                                               'Changes':changes,
+                                               'matchid':id})
 
 def save(request,id):
     with connection.cursor() as cursor:
@@ -113,13 +121,13 @@ def save(request,id):
                 total_gols_b+=i.GolType.Points
     match_l=Match.objects.filter(id=id)
     for i in gols:
-        print(i.PlayerID.Team)
+
         if i.PlayerID.Team == match_l.get().TeamA:
             teamA=pointsCount(i, match_l)
-            print(teamA)
+
         else:
             teamB=pointsCount(i, match_l)
-            print(teamB)
+
     doc = DocxTemplate('templates/test.docx')
     context={'test':'testasdas',
              't':request,
@@ -133,9 +141,8 @@ def save(request,id):
     doc.render(context)
     user_download_dir = os.path.expanduser('~\Downloads')
     print(user_download_dir)
-    doc.save(''+user_download_dir+f'\{match_l.get().TeamA.Name} vs {match_l.get().TeamB.Name}.docx')
-    
-    return(render(request,'save.html'))
+    doc.save(f'\{match_l.get().TeamA.Name} vs {match_l.get().TeamB.Name}.docx')
+    return(render(request,'save.html',{"file":user_download_dir}))
 
 def add_change(request,id):
     if request.method == 'POST':
