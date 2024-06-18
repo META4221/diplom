@@ -127,7 +127,7 @@ def save(request,id):
 
         else:
             teamB=pointsCount(i, match_l)
-
+    print(teamA,teamB)
     doc = DocxTemplate('templates/test.docx')
     context={'test':'testasdas',
              't':request,
@@ -136,12 +136,12 @@ def save(request,id):
              'Alerts':alerts,
              'Match':match_l,
              'gols':gols,
-              'GoalA':teamA,'GoalB':teamB,}
+              'GoalA':teamA,'GoalB':teamB}
     
     doc.render(context)
     user_download_dir = os.path.expanduser('~\Downloads')
     print(user_download_dir)
-    doc.save(f'\{match_l.get().TeamA.Name} vs {match_l.get().TeamB.Name}.docx')
+    doc.save(''+user_download_dir+f'\{match_l.get().TeamA.Name} vs {match_l.get().TeamB.Name}.docx')
     return(render(request,'save.html',{"file":user_download_dir}))
 
 def add_change(request,id):
